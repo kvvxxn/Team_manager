@@ -13,7 +13,17 @@ const Admin = () => {
   const [newName, setNewName] = useState('');
   const [newPos, setNewPos] = useState('PIVO (FW)');
 
-  // 팀원 삭제 함수 (관리자 전용 기능)
+  // 1. 등급 변경 함수 (관리자 기능)
+  const handleRoleChange = (id, newRole) => {
+    // 본인의 등급을 변경하려 할 때 경고 (실제로는 로그인된 사용자 ID와 비교 필요)
+    if (newRole === '회원' && window.confirm('정말 관리자 권한을 해제하시겠습니까?')) {
+       setMembers(members.map(m => m.id === id ? { ...m, role: newRole } : m));
+    } else {
+       setMembers(members.map(m => m.id === id ? { ...m, role: newRole } : m));
+    }
+  };
+
+  // 2. 팀원 삭제 함수 (관리자 전용 기능)
   const handleDelete = (id) => {
     if (window.confirm('해당 팀원을 명단에서 삭제하시겠습니까?')) {
       setMembers(members.filter(m => m.id !== id));
@@ -78,10 +88,15 @@ const Admin = () => {
                   <td style={styles.nameCell}>{member.name}</td>
                   <td>{member.position}</td>
                   <td>
-                    {/* 상태(정상/부상) 대신 관리자 여부 표시 */}
-                    <span style={member.role === '관리자' ? styles.adminBadge : styles.memberBadge}>
-                      {member.role}
-                    </span>
+                    <select 
+                      value={member.role} 
+                      onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                      style={member.role === '관리자' ? styles.adminSelect : styles.memberSelect}
+                    >
+                      <option value="관리자">👑 관리자</option>
+                      <option value="운영진">🛡️ 운영진</option>
+                      <option value="회원">👤 회원</option>
+                    </select>
                   </td>
                   <td>
                     {/* 관리자가 본인을 삭제하지 못하도록 예외 처리 가능 */}
@@ -114,6 +129,16 @@ const styles = {
   form: { display: 'flex', gap: '15px' },
   input: { flex: 2, padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' },
   select: { flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' },
+  
+  adminSelect: { 
+    padding: '8px', borderRadius: '8px', border: '1px solid #e57373', 
+    backgroundColor: '#ffebee', color: '#d32f2f', fontWeight: 'bold', cursor: 'pointer' 
+  },
+  memberSelect: { 
+    padding: '8px', borderRadius: '8px', border: '1px solid #ddd', 
+    backgroundColor: '#fff', color: '#333', cursor: 'pointer' 
+  },
+
   addBtn: { padding: '12px 25px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
   
   table: { width: '100%', borderCollapse: 'collapse', marginTop: '10px' },
