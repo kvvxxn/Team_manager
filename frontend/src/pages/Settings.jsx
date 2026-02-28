@@ -33,19 +33,6 @@ const Settings = () => {
           <button style={styles.editBtn}>프로필 수정</button>
         </section>
 
-        {/* 앱 설정 섹션 */}
-        <section style={styles.section}>
-          <h3 style={styles.sectionTitle}>앱 설정</h3>
-          <div style={styles.settingRow}>
-            <span>알림 설정</span>
-            <span style={styles.statusOn}>ON</span>
-          </div>
-          <div style={styles.settingRow}>
-            <span>다크 모드</span>
-            <span style={styles.statusOff}>OFF</span>
-          </div>
-        </section>
-
         {/* 로그아웃 버튼 */}
         <button 
           style={styles.logoutBtn} 
@@ -87,13 +74,6 @@ const styles = {
     marginTop: '20px', width: '100%', padding: '12px', backgroundColor: '#f5f5f5', 
     border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer' 
   },
-
-  settingRow: { 
-    display: 'flex', justifyContent: 'space-between', padding: '15px 0', 
-    borderBottom: '1px solid #f5f5f5', alignItems: 'center' 
-  },
-  statusOn: { color: '#1a73e8', fontWeight: 'bold' },
-  statusOff: { color: '#999', fontWeight: 'bold' },
 
   logoutBtn: { 
     padding: '18px', backgroundColor: '#ff5252', color: '#fff', 
