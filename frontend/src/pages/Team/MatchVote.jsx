@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import TeamHeader from '../../components/TeamHeader';
+import { useNavigate } from 'react-router-dom';
+// import TeamHeader from '../../components/TeamHeader'; // 헤더 제거
 
 const MatchVote = () => {
+  const navigate = useNavigate(); 
   // 탭 상태 관리 ('vote' | 'lineup')
   const [activeTab, setActiveTab] = useState('vote');
 
@@ -230,7 +232,18 @@ const MatchVote = () => {
     </div>
   );
 };
+메인으로 버튼 스타일
+  backBtn: {
+    padding: '15px 20px', 
+    cursor: 'pointer', 
+    display: 'flex', 
+    alignItems: 'center', 
+    backgroundColor: '#fff',
+    borderBottom: '1px solid #f0f0f0' 
+  },
+  backText: { fontSize: '0.95rem', fontWeight: 'bold', marginLeft: '8px', color: '#555' },
 
+  // 
 const styles = {
   pageWrapper: { backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '30px' },
   container: { maxWidth: '800px', margin: '0 auto', backgroundColor: '#fff', minHeight: '100vh', paddingBottom: '50px' },
