@@ -31,6 +31,15 @@ const financeData = {
   // 데이터가 없는 달은 빈 배열 처리
 };
 
+// 📌 전체 멤버 리스트 (회비 미납시 자동 생성용)
+const allMembers = [
+  { id: 1, name: '김민수' },
+  { id: 2, name: '이영희' },
+  { id: 3, name: '박철수' },
+  { id: 4, name: '최지우' },
+  { id: 5, name: '정대만' },
+];
+
 const Finance = () => {
   // 1. 현재 보고 있는 연도와 월 상태 (초기값: 2026년 2월)
   const [currentDate, setCurrentDate] = useState(new Date(2026, 1)); 
@@ -39,8 +48,21 @@ const Finance = () => {
   const month = currentDate.getMonth() + 1; // 1 ~ 12
   const monthKey = `${year}-${String(month).padStart(2, '0')}`;
 
-  // 2. 현재 월 데이터 가져오기 (없으면 빈 값)
-  const currentData = financeData[monthKey] || { members: [], expenses: [] };
+  // 2. 현재 월 데이터 가져오기 
+  // 데이터가 없으면(미래의 달 등) 모든 멤버를 '미납' 상태로 생성하여 표시
+  let currentData = financeData[monthKey];
+  
+  if (!currentData) {
+    currentData = {
+      members: allMembers.map(member => ({
+        ...member,
+        isPaid: false,
+        amount: 20000 // 기본 회비
+      })),
+      expenses: []
+    };
+  }
+  
   const { members, expenses } = currentData;
 
   // 3. 계산 로직
