@@ -100,14 +100,16 @@ const Calendar = () => {
           <div onClick={() => navigate('/main')} style={styles.backBtn}>
             🏠 <span style={styles.backText}>메인으로</span>
           </div>
-          <div style={styles.monthNav}>
-            <button onClick={handlePrevMonth} style={styles.navBtn}>◀</button>
-            <h2 style={styles.title}>{year}년 {month + 1}월 일정</h2>
-            <button onClick={handleNextMonth} style={styles.navBtn}>▶</button>
-          </div>
+          {activeTab === 'calendar' && (
+            <div style={styles.monthNav}>
+              <button onClick={handlePrevMonth} style={styles.navBtn}>◀</button>
+              <h2 style={styles.title}>{year}년 {month + 1}월 일정</h2>
+              <button onClick={handleNextMonth} style={styles.navBtn}>▶</button>
+            </div>
+          )}
         </div>
 
-        {/* 탭 네비게이션 */}
+        {/* 탭 네비게이션 (스크롤 가능하도록 수정) */}
         <div style={styles.tabContainer}>
           <button 
             style={{...styles.tabBtn, ...(activeTab === 'calendar' ? styles.activeTab : {})}} 
@@ -116,10 +118,22 @@ const Calendar = () => {
             📅 달력
           </button>
           <button 
-            style={{...styles.tabBtn, ...(activeTab === 'add' ? styles.activeTab : {})}} 
-            onClick={() => setActiveTab('add')}
+            style={{...styles.tabBtn, ...(activeTab === 'unavailable' ? styles.activeTab : {})}} 
+            onClick={() => setActiveTab('unavailable')}
           >
-            ➕ 불참 등록
+            🚫 불참 등록
+          </button>
+          <button 
+            style={{...styles.tabBtn, ...(activeTab === 'team' ? styles.activeTab : {})}} 
+            onClick={() => setActiveTab('team')}
+          >
+            ⚽ 팀 일정 관리
+          </button>
+          <button 
+            style={{...styles.tabBtn, ...(activeTab === 'ai' ? styles.activeTab : {})}} 
+            onClick={() => setActiveTab('ai')}
+          >
+            🤖 AI 일정 매니저
           </button>
         </div>
       </header>
@@ -181,11 +195,11 @@ const Calendar = () => {
         </>
       )}
 
-      {/* 2. 일정 추가(불참 등록) 뷰 */}
-      {activeTab === 'add' && (
+      {/* 2. 불참 등록 뷰 */}
+      {activeTab === 'unavailable' && (
         <div style={styles.addWrapper}>
           <div style={styles.addSection}>
-            <h3 style={styles.sectionTitle}>📅 불참 일정 등록</h3>
+            <h3 style={styles.sectionTitle}>🚫 불참 일정 등록</h3>
             <p style={styles.sectionDesc}>개인 사정으로 참여가 어려운 날짜를 미리 등록해주세요.</p>
             
             <div style={styles.formCard}>
@@ -233,6 +247,67 @@ const Calendar = () => {
         </div>
       )}
 
+      {/* 3. 팀 일정 관리 뷰 */}
+      {activeTab === 'team' && (
+        <div style={styles.centerContainer}>
+          <div style={styles.addSection}>
+            <h3 style={styles.sectionTitle}>⚽ 팀 일정 관리</h3>
+            <p style={styles.sectionDesc}>새로운 경기나 회식 등 팀 공식 일정을 등록하고 관리합니다.</p>
+            
+            <div style={styles.formCard}>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>일정 유형</label>
+                <select style={styles.input}>
+                  <option>경기 (Match)</option>
+                  <option>회식 (Event)</option>
+                  <option>회비 (Finance)</option>
+                </select>
+              </div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>날짜 및 시간</label>
+                <input type="datetime-local" style={styles.input} />
+              </div>
+               <div style={styles.inputGroup}>
+                <label style={styles.label}>일정 제목</label>
+                <input type="text" placeholder="예: 친선 경기 vs OO팀" style={styles.input} />
+              </div>
+              <button style={{...styles.submitBtn, backgroundColor: '#1976D2'}}>
+                팀 일정 추가하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. AI 일정 매니저 뷰 */}
+      {activeTab === 'ai' && (
+        <div style={styles.centerContainer}>
+          <div style={{...styles.addSection, border: '2px solid #e3f2fd'}}>
+            <h3 style={{...styles.sectionTitle, color: '#1565c0'}}>🤖 AI 일정 매니저</h3>
+            <p style={styles.sectionDesc}>
+              팀원들의 불참 일정과 선호 시간을 분석하여<br/>
+              최적의 경기/모임 날짜를 추천해드립니다.
+            </p>
+            
+            <div style={{backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '15px', marginBottom: '20px'}}>
+              <h4 style={{margin: '0 0 10px 0', color: '#0d47a1'}}>💡 AI 추천 기능</h4>
+              <ul style={{margin: 0, paddingLeft: '20px', color: '#555', lineHeight: '1.6'}}>
+                <li>팀원 전체 스케줄 분석</li>
+                <li>최적의 경기 시간대 추천 (Top 3)</li>
+                <li>경기장 예약 가능 여부 확인 (연동 예정)</li>
+              </ul>
+            </div>
+
+            <button style={{...styles.submitBtn, backgroundColor: '#0d47a1'}}>
+              AI 일정 분석 시작하기
+            </button>
+            <p style={{textAlign: 'center', fontSize: '0.8rem', color: '#999', marginTop: '10px'}}>
+              * LLM API 연동 준비 중입니다.
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
@@ -272,11 +347,11 @@ const styles = {
   legendUnavail: { color: '#d32f2f', fontWeight: 'bold' },
 
   // 탭 스타일
-  tabContainer: { display: 'flex', gap: '10px' },
+  tabContainer: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px' },
   tabBtn: {
-    padding: '10px 20px', borderRadius: '20px', border: '1px solid #ddd',
+    padding: '8px 16px', borderRadius: '20px', border: '1px solid #ddd',
     backgroundColor: '#fff', cursor: 'pointer', fontWeight: 'bold', color: '#888',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s', whiteSpace: 'nowrap', fontSize: '0.9rem'
   },
   activeTab: { backgroundColor: '#333', color: '#fff', borderColor: '#333' },
   
@@ -320,7 +395,8 @@ const styles = {
     backgroundColor: '#ffebee', color: '#c62828', fontWeight: 'bold', border: '1px solid #ffcdd2'
   },
 
-  // 일정 추가(Add) 섹션 스타일
+  // 일정 추가 관련 스타일
+  centerContainer: { display: 'flex', justifyContent: 'center' },
   addWrapper: { display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' },
   
   addSection: {
@@ -333,8 +409,13 @@ const styles = {
   },
   
   sectionTitle: { fontSize: '1.3rem', fontWeight: 'bold', margin: '0 0 10px 0' },
+  subTitle: { fontSize: '1.1rem', fontWeight: 'bold', margin: '0 0 15px 0', color: '#444' },
   sectionDesc: { color: '#666', marginBottom: '30px' },
-  formCard: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  
+  formCard: { display: 'flex', flexDirection: 'column', gap: '15px' },
+  actionCard: { display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '10px' },
+  divider: { height: '1px', backgroundColor: '#eee', margin: '30px 0' },
+
   inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px' },
   label: { fontWeight: 'bold', color: '#333' },
   input: { padding: '12px', borderRadius: '10px', border: '1px solid #ddd', fontSize: '1rem' },
