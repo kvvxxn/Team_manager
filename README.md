@@ -77,7 +77,13 @@ src/
     npm install
     ```
 
-3. 프로젝트를 실행합니다.
+3. frontend 폴더로 이동합니다.
+
+   ```bash
+   cd frontend
+   ```
+
+4. 프로젝트를 실행합니다.
 
     ```bash
     npm start
