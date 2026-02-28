@@ -19,7 +19,7 @@ const Calendar = () => {
       <header style={styles.header}>
         <div style={styles.titleSection}>
           <div onClick={() => navigate('/main')} style={styles.backBtn}>
-            🏠 <span style={styles.backText}>메인 메뉴로</span>
+            🏠 <span style={styles.backText}>메인으로</span>
           </div>
           <h2 style={styles.title}>2026년 2월 일정</h2>
         </div>

@@ -7,7 +7,6 @@ const TeamHeader = () => {
 
   const menuItems = [
     { name: '기록 보기', path: '/team/stats', color: '#4CAF50' },
-    { name: '경기/팀', path: '/team/match-vote', color: '#2196F3' },
     { name: '회비 납부', path: '/team/finance', color: '#FF9800' },
     { name: '관리', path: '/team/admin', color: '#9C27B0' },
   ];

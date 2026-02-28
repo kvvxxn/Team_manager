@@ -72,9 +72,14 @@ const MatchVote = () => {
 
   return (
     <div style={styles.pageWrapper}>
-      <TeamHeader />
+      {/* <TeamHeader />  헤더 제거 */}
       <div style={styles.container}>
         
+        {/* 메인으로 이동 버튼 */}
+        <div onClick={() => navigate('/main')} style={styles.backBtn}>
+          🏠 <span style={styles.backText}>메인으로</span>
+        </div>
+
         {/* 상단 탭 네비게이션 */}
         <div style={styles.tabHeader}>
           <div 
@@ -232,7 +237,9 @@ const MatchVote = () => {
     </div>
   );
 };
-메인으로 버튼 스타일
+
+const styles = {
+  // 메인으로 버튼 스타일
   backBtn: {
     padding: '15px 20px', 
     cursor: 'pointer', 
@@ -243,8 +250,6 @@ const MatchVote = () => {
   },
   backText: { fontSize: '0.95rem', fontWeight: 'bold', marginLeft: '8px', color: '#555' },
 
-  // 
-const styles = {
   pageWrapper: { backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '30px' },
   container: { maxWidth: '800px', margin: '0 auto', backgroundColor: '#fff', minHeight: '100vh', paddingBottom: '50px' },
   

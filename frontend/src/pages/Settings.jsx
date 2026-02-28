@@ -26,6 +26,10 @@ const Settings = () => {
             <span style={styles.label}>포지션</span>
             <span style={styles.value}>PIVO (FW)</span>
           </div>
+          <div style={styles.infoRow}>
+            <span style={styles.label}>소속팀</span>
+            <span style={styles.value}>FC 개발자</span>
+          </div>
           <button style={styles.editBtn}>프로필 수정</button>
         </section>
 
