@@ -18,10 +18,14 @@ function App() {
         <Route path="/" element={<Start />} />
         <Route path="/login" element={<Login />} />
         <Route path="/main" element={<Main />} />
+        {/* 기존 매칭 페이지는 남겨두었습니다. 필요 없다면 지우셔도 됩니다. */}
         <Route path="/match" element={<Match />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/team/stats" element={<PlayerStats />} />
-        <Route path="/team/vote" element={<MatchVote />} />
+        
+        {/* 💡 이 부분의 경로를 /team/match-vote 로 수정했습니다! */}
+        <Route path="/team/match-vote" element={<MatchVote />} />
+        
         <Route path="/team/finance" element={<Finance />} />
         <Route path="/team/admin" element={<Admin />} />
         <Route path="/settings" element={<Settings />} />

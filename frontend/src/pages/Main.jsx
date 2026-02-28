@@ -24,11 +24,11 @@ const Main = () => {
         </div>
 
         {/* 하단 2개 (짧은 카드) */}
-        {/* 팀 관리 대신 매칭으로 변경 */}
-        <div style={{ ...styles.card, backgroundColor: '#fff3e0' }} onClick={() => navigate('/match')}>
-          <span style={styles.icon}>🤝</span>
-          <h2>매칭</h2>
-          <p>상대 팀 찾기 및 랭킹 확인</p>
+        {/* 기존 매칭 카드를 '경기 투표 및 팀 셋업'으로 변경 */}
+        <div style={{ ...styles.card, backgroundColor: '#fff3e0' }} onClick={() => navigate('/team/match-vote')}>
+          <span style={styles.icon}>🗳️</span>
+          <h2>경기 투표 및 팀 셋업</h2>
+          <p>투표 확인 및 AI 팀 밸런스</p>
         </div>
         <div style={{ ...styles.card, backgroundColor: '#f3e5f5' }} onClick={() => navigate('/settings')}>
           <span style={styles.icon}>🛠️</span>
@@ -40,7 +40,6 @@ const Main = () => {
   );
 };
 
-// ... 기존 styles 유지 (gridTemplateRows: '1.5fr 1fr' 포함)
 const styles = {
   container: { height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f5f5f5' },
   header: { height: '15%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' },
