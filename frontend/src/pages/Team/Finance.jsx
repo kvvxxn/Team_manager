@@ -1,36 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TeamHeader from '../../components/TeamHeader';
 
-// 임시 회비 및 지출 데이터
-const membersFinance = [
-  { id: 1, name: '김민수', isPaid: true, amount: 20000 },
-  { id: 2, name: '이영희', isPaid: true, amount: 20000 },
-  { id: 3, name: '박철수', isPaid: false, amount: 20000 },
-  { id: 4, name: '최지우', isPaid: true, amount: 20000 },
-  { id: 5, name: '정대만', isPaid: false, amount: 20000 },
-];
-
-const expenses = [
-  { id: 1, date: '2026-01-20', item: '경기장 대관료', amount: 80000 },
-  { id: 2, date: '2026-01-22', item: '음료수 구매', amount: 15000 },
-  { id: 3, date: '2026-01-25', item: '팀 유니폼 제작 (선금)', amount: 100000 },
-];
+// 📌 월별 데이터 (Mock Data)
+const financeData = {
+  '2026-01': {
+    members: [
+      { id: 1, name: '김민수', isPaid: true, amount: 20000 },
+      { id: 2, name: '이영희', isPaid: true, amount: 20000 },
+      { id: 3, name: '박철수', isPaid: false, amount: 20000 },
+      { id: 4, name: '최지우', isPaid: true, amount: 20000 },
+      { id: 5, name: '정대만', isPaid: false, amount: 20000 },
+    ],
+    expenses: [
+      { id: 1, date: '2026-01-20', item: '경기장 대관료', amount: 80000 },
+      { id: 2, date: '2026-01-22', item: '음료수 구매', amount: 15000 },
+    ]
+  },
+  '2026-02': {
+    members: [
+      { id: 1, name: '김민수', isPaid: true, amount: 20000 },
+      { id: 2, name: '이영희', isPaid: false, amount: 20000 }, // 미납
+      { id: 3, name: '박철수', isPaid: true, amount: 20000 },
+      { id: 4, name: '최지우', isPaid: true, amount: 20000 },
+      { id: 5, name: '정대만', isPaid: true, amount: 20000 }, // 납부
+    ],
+    expenses: [
+      { id: 3, date: '2026-02-10', item: '축구공 구입 (3개)', amount: 90000 },
+    ]
+  },
+  // 데이터가 없는 달은 빈 배열 처리
+};
 
 const Finance = () => {
-  const totalIncome = membersFinance
+  // 1. 현재 보고 있는 연도와 월 상태 (초기값: 2026년 2월)
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 1)); 
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth() + 1; // 1 ~ 12
+  const monthKey = `${year}-${String(month).padStart(2, '0')}`;
+
+  // 2. 현재 월 데이터 가져오기 (없으면 빈 값)
+  const currentData = financeData[monthKey] || { members: [], expenses: [] };
+  const { members, expenses } = currentData;
+
+  // 3. 계산 로직
+  const totalIncome = members
     .filter(member => member.isPaid)
     .reduce((sum, member) => sum + member.amount, 0);
 
   const totalExpense = expenses.reduce((sum, item) => sum + item.amount, 0);
   const currentBalance = totalIncome - totalExpense;
 
+  // 4. 월 이동 핸들러
+  const handlePrevMonth = () => setCurrentDate(new Date(year, month - 2, 1));
+  const handleNextMonth = () => setCurrentDate(new Date(year, month, 1));
+
   return (
     <div style={styles.pageWrapper}>
       <TeamHeader />
       <div style={styles.container}>
         <header style={styles.header}>
-          <h2 style={styles.pageTitle}>회비 관리</h2>
-          <p style={styles.currentMonth}>2026년 1월 회비 현황</p>
+          <h2 style={styles.pageTitle}>💰 회비 관리</h2>
+          
+          {/* 월별 슬라이딩 네비게이션 */}
+          <div style={styles.monthNav}>
+            <button onClick={handlePrevMonth} style={styles.navBtn}>◀</button>
+            <span style={styles.currentMonth}>{year}년 {month}월</span>
+            <button onClick={handleNextMonth} style={styles.navBtn}>▶</button>
+          </div>
         </header>
 
         <section style={styles.balanceSection}>
@@ -49,39 +86,47 @@ const Finance = () => {
         </section>
 
         <section style={styles.memberStatusSection}>
-          <h3 style={styles.sectionTitle}>회원별 회비 납부 현황</h3>
-          <ul style={styles.memberList}>
-            {membersFinance.map(member => (
-              <li key={member.id} style={styles.memberItem}>
-                <span style={styles.memberName}>{member.name}</span>
-                <span style={member.isPaid ? styles.paidStatus : styles.unpaidStatus}>
-                  {member.isPaid ? '납부 완료' : '미납'}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <h3 style={styles.sectionTitle}>📋 회원별 납부 현황</h3>
+          {members.length === 0 ? (
+            <div style={styles.emptyState}>데이터가 없습니다.</div>
+          ) : (
+            <ul style={styles.memberList}>
+              {members.map(member => (
+                <li key={member.id} style={styles.memberItem}>
+                  <span style={styles.memberName}>{member.name}</span>
+                  <span style={member.isPaid ? styles.paidStatus : styles.unpaidStatus}>
+                    {member.isPaid ? '납부 완료' : '미납'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section style={styles.expenseListSection}>
-          <h3 style={styles.sectionTitle}>지출 내역</h3>
-          <table style={styles.expenseTable}>
-            <thead>
-              <tr>
-                <th style={styles.th}>날짜</th>
-                <th style={styles.th}>항목</th>
-                <th style={styles.th}>금액</th>
-              </tr>
-            </thead>
-            <tbody>
-              {expenses.map(exp => (
-                <tr key={exp.id} style={styles.tr}>
-                  <td style={styles.td}>{exp.date}</td>
-                  <td style={styles.td}>{exp.item}</td>
-                  <td style={{...styles.td, ...styles.expenseItemAmount}}>-{exp.amount.toLocaleString()}원</td>
+          <h3 style={styles.sectionTitle}>💸 지출 내역</h3>
+          {expenses.length === 0 ? (
+            <div style={styles.emptyState}>지출 내역이 없습니다.</div>
+          ) : (
+            <table style={styles.expenseTable}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>날짜</th>
+                  <th style={styles.th}>항목</th>
+                  <th style={styles.th}>금액</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {expenses.map(exp => (
+                  <tr key={exp.id} style={styles.tr}>
+                    <td style={styles.td}>{exp.date}</td>
+                    <td style={styles.td}>{exp.item}</td>
+                    <td style={{...styles.td, ...styles.expenseItemAmount}}>-{exp.amount.toLocaleString()}원</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
       </div>
     </div>
@@ -90,9 +135,16 @@ const Finance = () => {
 
 const styles = {
   container: { padding: '30px', backgroundColor: '#fff', minHeight: '100vh', fontFamily: 'Arial, sans-serif' },
-  header: { textAlign: 'center', marginBottom: '40px', borderBottom: '1px solid #eee', paddingBottom: '20px' },
-  pageTitle: { fontSize: '2rem', fontWeight: 'bold', color: '#333', marginBottom: '10px' },
-  currentMonth: { fontSize: '1.2rem', color: '#666' },
+  header: { textAlign: 'center', marginBottom: '30px', borderBottom: '1px solid #eee', paddingBottom: '20px' },
+  pageTitle: { fontSize: '2rem', fontWeight: 'bold', color: '#333', marginBottom: '20px' },
+  
+  monthNav: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' },
+  currentMonth: { fontSize: '1.5rem', fontWeight: 'bold', color: '#333' },
+  navBtn: { 
+    fontSize: '1.2rem', cursor: 'pointer', background: 'none', border: '1px solid #ddd', 
+    borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    transition: '0.2s'
+  },
 
   balanceSection: {
     display: 'flex', justifyContent: 'space-around', marginBottom: '40px',
