@@ -95,6 +95,7 @@ const Admin = () => {
                     >
                       <option value="관리자">👑 관리자</option>
                       <option value="운영진">🛡️ 운영진</option>
+                      <option value="총무">💰 총무</option>
                       <option value="회원">👤 회원</option>
                     </select>
                   </td>
