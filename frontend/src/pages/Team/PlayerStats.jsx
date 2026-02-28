@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import TeamHeader from '../../components/TeamHeader';
 
 const players = [
@@ -9,6 +9,8 @@ const players = [
 ];
 
 const PlayerStats = () => {
+  const [showAddModal, setShowAddModal] = useState(false);
+  
   // 랭크별 스타일을 결정하는 함수
   const getRankStyle = (rank) => {
     switch (rank) {
@@ -53,7 +55,59 @@ const PlayerStats = () => {
             <h2 style={styles.teamName}>우리 풋살 FC</h2>
           </div>
           <div style={styles.pageTitle}>선수 명부 & 기록</div>
+          
+          <button 
+            style={styles.addRecordBtn} 
+            onClick={() => setShowAddModal(true)}
+          >
+            📋 기록 추가 요청
+          </button>
         </header>
+
+        {showAddModal && (
+          <div style={styles.modalOverlay}>
+            <div style={styles.modalContent}>
+              <h3 style={styles.modalTitle}>📝 경기 기록 등록 요청</h3>
+              <p style={styles.modalDesc}>본인의 경기 기록을 입력해주세요. 관리자 승인 후 반영됩니다.</p>
+              
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>경기 날짜</label>
+                <input type="date" style={styles.input} />
+              </div>
+              
+              <div style={styles.inputRow}>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>득점 (Goal)</label>
+                  <input type="number" min="0" placeholder="0" style={styles.input} />
+                </div>
+                <div style={styles.inputGroup}>
+                  <label style={styles.label}>도움 (Assist)</label>
+                  <input type="number" min="0" placeholder="0" style={styles.input} />
+                </div>
+              </div>
+
+               <div style={styles.inputGroup}>
+                <label style={styles.label}>포지션</label>
+                <select style={styles.input}>
+                  <option>PIVO (FW)</option>
+                  <option>ALA (MF)</option>
+                  <option>FIXO (DF)</option>
+                  <option>GOLEIRO (GK)</option>
+                </select>
+              </div>
+
+              <div style={styles.modalActions}>
+                <button style={styles.cancelBtn} onClick={() => setShowAddModal(false)}>취소</button>
+                <button style={styles.submitBtn} onClick={() => {
+                  alert('기록 등록이 요청되었습니다. 관리자 승인을 기다려주세요.');
+                  setShowAddModal(false);
+                }}>
+                  등록 요청
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <section style={styles.tableSection}>
           <table style={styles.table}>
@@ -95,7 +149,8 @@ const PlayerStats = () => {
   );
 };
 
-// 기존 스타일 유지
+
+// 기존 스타일 유지 및 업데이트
 const styles = {
   pageWrapper: { backgroundColor: '#f9f9f9', minHeight: '100vh' },
   container: { padding: '20px 40px' },
@@ -111,6 +166,43 @@ const styles = {
   },
   teamName: { fontSize: '1.4rem', fontWeight: 'bold', margin: 0 },
   pageTitle: { fontSize: '1rem', color: '#888', fontWeight: '500' },
+  
+  // 새로 추가된 버튼 스타일
+  addRecordBtn: {
+    padding: '10px 20px', backgroundColor: '#333', color: '#fff', 
+    border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold',
+    fontSize: '0.9rem', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', transition: '0.2s',
+    display: 'flex', alignItems: 'center', gap: '5px'
+  },
+
+  // 모달 스타일
+  modalOverlay: {
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+    zIndex: 1000
+  },
+  modalContent: {
+    backgroundColor: '#fff', padding: '30px', borderRadius: '15px', width: '90%', maxWidth: '400px',
+    boxShadow: '0 5px 20px rgba(0,0,0,0.2)'
+  },
+  modalTitle: { fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '10px', color: '#333' },
+  modalDesc: { fontSize: '0.9rem', color: '#666', marginBottom: '20px' },
+  
+  inputRow: { display: 'flex', gap: '15px', width: '100%' }, // width 100% 추가
+  inputGroup: { 
+    display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '15px', 
+    flex: 1, minWidth: 0 // Flex 아이템 넘침 방지
+  },
+  label: { fontSize: '0.9rem', fontWeight: 'bold', color: '#444' },
+  input: { 
+    padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem',
+    width: '100%', boxSizing: 'border-box' // box-sizing 추가하여 패딩 포함 계산
+  },
+  
+  modalActions: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' },
+  cancelBtn: { padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#f5f5f5', cursor: 'pointer', fontWeight: 'bold', color: '#666' },
+  submitBtn: { padding: '10px 20px', borderRadius: '8px', border: 'none', backgroundColor: '#333', cursor: 'pointer', fontWeight: 'bold', color: '#fff' },
+  
   tableSection: { 
     backgroundColor: '#fff', borderRadius: '12px', padding: '20px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)', overflowX: 'auto' 
