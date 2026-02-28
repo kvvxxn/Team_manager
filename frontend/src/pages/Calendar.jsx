@@ -1,18 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. 이동을 위한 hook 추가
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const events = [
+// 실제 환경에서는 API에서 받아올 데이터 (예비 데이터)
+const initialEvents = [
   { id: 1, date: '2026-02-05', type: 'match', title: '친선 경기 vs FC 개발자', time: '20:00' },
   { id: 2, date: '2026-02-10', type: 'finance', title: '2월 정기 회비 마감', time: '23:59' },
   { id: 3, date: '2026-02-18', type: 'match', title: '리그 3라운드', time: '19:00' },
   { id: 4, date: '2026-02-25', type: 'event', title: '팀 회식 (강남역)', time: '21:30' },
+  { id: 5, date: '2026-03-01', type: 'match', title: '삼일절 친선 매치', time: '14:00' },
 ];
 
 const Calendar = () => {
-  const navigate = useNavigate(); // 2. navigate 함수 선언
-  const [activeTab, setActiveTab] = useState('calendar'); // 탭 상태 ('calendar' | 'add')
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' | 'add'
   
-  // 불참 일정 데이터 (초기값)
+  // 1. 현재 보고 있는 연도와 월 상태 관리 (초기값: 2026년 2월)
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 1)); // Month is 0-indexed (1 = Feb)
+  
+  // 2. 전체 이벤트 및 불참 일정 데이터 상태 관리
+  const [events, setEvents] = useState(initialEvents);
   const [unavailableDates, setUnavailableDates] = useState([
     { id: 1, date: '2026-02-14', name: '김민수', reason: '가족 여행' },
     { id: 2, date: '2026-02-20', name: '이영희', reason: '야근 예정' },
@@ -22,8 +28,35 @@ const Calendar = () => {
   const [inputDate, setInputDate] = useState('');
   const [inputReason, setInputReason] = useState('');
 
-  const days = Array.from({ length: 28 }, (_, i) => i + 1); 
-  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+  // 3. 현재 월의 달력 생성 로직
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth(); // 0 ~ 11
+
+  // 해당 월의 첫 날과 마지막 날 계산
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
+  
+  // 첫 날의 요일 (0: 일요일, 1: 월요일 ... )
+  const startDayOfWeek = firstDayOfMonth.getDay();
+
+  // 달력에 표시할 날짜 배열 생성 (빈 칸 포함)
+  const calendarDays = [];
+  // 앞쪽 빈 날짜 채우기
+  for (let i = 0; i < startDayOfWeek; i++) {
+    calendarDays.push(null);
+  }
+  // 실제 날짜 채우기
+  for (let i = 1; i <= lastDateOfMonth; i++) {
+    calendarDays.push(i);
+  }
+
+  // 월 이동 핸들러
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1));
+  };
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1));
+  };
 
   // 일정 추가 핸들러
   const handleAddUnavailable = () => {
@@ -31,27 +64,47 @@ const Calendar = () => {
       alert('날짜와 사유를 모두 입력해주세요.');
       return;
     }
+    
+    // API 연동 시 여기서 POST 요청 발송
     const newEntry = {
       id: Date.now(),
       date: inputDate,
-      name: '나 (김민수)', // 현재 로그인한 사용자라고 가정
+      name: '나 (김민수)', 
       reason: inputReason
     };
+    
     setUnavailableDates([...unavailableDates, newEntry]);
     setInputDate('');
     setInputReason('');
     alert('불참 일정이 등록되었습니다.');
   };
 
+  // 날짜 형식 변환 (YYYY-MM-DD)
+  const getFormattedDate = (day) => {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  };
+
+  // 실제 API 연동을 위한 useEffect 예시
+  useEffect(() => {
+    // console.log(`${year}년 ${month + 1}월 데이터 로딩중...`);
+    // fetch(`/api/events?year=${year}&month=${month + 1}`).then(...)
+  }, [year, month]);
+
+  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+
   return (
     <div style={styles.container}>
-      {/* 상단 헤더 영역 수정 */}
+      {/* 상단 헤더 영역 */}
       <header style={styles.header}>
         <div style={styles.titleSection}>
           <div onClick={() => navigate('/main')} style={styles.backBtn}>
             🏠 <span style={styles.backText}>메인으로</span>
           </div>
-          <h2 style={styles.title}>2026년 2월 일정</h2>
+          <div style={styles.monthNav}>
+            <button onClick={handlePrevMonth} style={styles.navBtn}>◀</button>
+            <h2 style={styles.title}>{year}년 {month + 1}월 일정</h2>
+            <button onClick={handleNextMonth} style={styles.navBtn}>▶</button>
+          </div>
         </div>
 
         {/* 탭 네비게이션 */}
@@ -60,13 +113,13 @@ const Calendar = () => {
             style={{...styles.tabBtn, ...(activeTab === 'calendar' ? styles.activeTab : {})}} 
             onClick={() => setActiveTab('calendar')}
           >
-            📅 일정
+            📅 달력
           </button>
           <button 
             style={{...styles.tabBtn, ...(activeTab === 'add' ? styles.activeTab : {})}} 
             onClick={() => setActiveTab('add')}
           >
-            ➕ 일정 추가
+            ➕ 불참 등록
           </button>
         </div>
       </header>
@@ -86,10 +139,12 @@ const Calendar = () => {
               <div key={day} style={styles.dayHeader}>{day}</div>
             ))}
 
-            {days.map(day => {
-              const dateStr = `2026-02-${String(day).padStart(2, '0')}`;
+            {calendarDays.map((day, index) => {
+              if (!day) return <div key={`empty-${index}`} style={styles.emptyCell}></div>;
+
+              const dateStr = getFormattedDate(day);
+              // 날짜별 이벤트 필터링
               const dayEvents = events.filter(e => e.date === dateStr);
-              // 해당 날짜에 불참하는 사람들도 표시
               const dayUnavailable = unavailableDates.filter(u => u.date === dateStr);
 
               return (
@@ -128,48 +183,52 @@ const Calendar = () => {
 
       {/* 2. 일정 추가(불참 등록) 뷰 */}
       {activeTab === 'add' && (
-        <div style={styles.addSection}>
-          <h3 style={styles.sectionTitle}>📅 불참 일정 등록</h3>
-          <p style={styles.sectionDesc}>개인 사정으로 참여가 어려운 날짜를 미리 등록해주세요.</p>
-          
-          <div style={styles.formCard}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>날짜 선택</label>
-              <input 
-                type="date" 
-                style={styles.input} 
-                value={inputDate}
-                onChange={(e) => setInputDate(e.target.value)}
-              />
+        <div style={styles.addWrapper}>
+          <div style={styles.addSection}>
+            <h3 style={styles.sectionTitle}>📅 불참 일정 등록</h3>
+            <p style={styles.sectionDesc}>개인 사정으로 참여가 어려운 날짜를 미리 등록해주세요.</p>
+            
+            <div style={styles.formCard}>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>날짜 선택</label>
+                <input 
+                  type="date" 
+                  style={styles.input} 
+                  value={inputDate}
+                  onChange={(e) => setInputDate(e.target.value)}
+                />
+              </div>
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>불참 사유</label>
+                <input 
+                  type="text" 
+                  placeholder="예: 야근, 가족 행사 등" 
+                  style={styles.input} 
+                  value={inputReason}
+                  onChange={(e) => setInputReason(e.target.value)}
+                />
+              </div>
+              <button style={styles.submitBtn} onClick={handleAddUnavailable}>등록하기</button>
             </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>불참 사유</label>
-              <input 
-                type="text" 
-                placeholder="예: 야근, 가족 행사 등" 
-                style={styles.input} 
-                value={inputReason}
-                onChange={(e) => setInputReason(e.target.value)}
-              />
-            </div>
-            <button style={styles.submitBtn} onClick={handleAddUnavailable}>등록하기</button>
           </div>
 
-          <h3 style={{...styles.sectionTitle, marginTop: '40px'}}>📋 등록된 불참 현황</h3>
-          <div style={styles.listContainer}>
-            {unavailableDates.length === 0 ? (
-              <p style={{color: '#999'}}>등록된 일정이 없습니다.</p>
-            ) : (
-              unavailableDates.map(item => (
-                <div key={item.id} style={styles.listItem}>
-                  <div style={styles.listDate}>{item.date}</div>
-                  <div style={styles.listContent}>
-                    <span style={styles.listName}>{item.name}</span>
-                    <span style={styles.listReason}>{item.reason}</span>
+          <div style={styles.listSection}>
+            <h3 style={styles.sectionTitle}>📋 내 불참 현황</h3>
+            <div style={styles.listContainer}>
+              {unavailableDates.length === 0 ? (
+                <p style={{color: '#999'}}>등록된 일정이 없습니다.</p>
+              ) : (
+                unavailableDates.sort((a,b) => new Date(a.date) - new Date(b.date)).map(item => (
+                  <div key={item.id} style={styles.listItem}>
+                    <div style={styles.listDate}>{item.date}</div>
+                    <div style={styles.listContent}>
+                      <span style={styles.listName}>{item.name}</span>
+                      <span style={styles.listReason}>{item.reason}</span>
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -203,6 +262,9 @@ const styles = {
   backText: { fontSize: '0.9rem', fontWeight: 'bold', marginLeft: '6px', color: '#555' },
   title: { fontSize: '2.2rem', fontWeight: '800', margin: 0, color: '#333' },
   
+  monthNav: { display: 'flex', alignItems: 'center', gap: '15px' },
+  navBtn: { padding: '5px 10px', fontSize: '1.2rem', cursor: 'pointer', backgroundColor: '#fff', border: 'none', borderRadius: '50%' },
+  
   legend: { display: 'flex', gap: '20px', fontSize: '1rem', paddingBottom: '10px' },
   legendMatch: { color: '#2e7d32', fontWeight: 'bold' },
   legendFinance: { color: '#ef6c00', fontWeight: 'bold' },
@@ -234,12 +296,14 @@ const styles = {
   dayCell: { 
     backgroundColor: '#fff', 
     minHeight: '140px', 
-    padding: '15px', 
-    borderRadius: '16px', // 셀을 둥글게 만들어 부드러운 느낌
+    padding: '10px', 
+    borderRadius: '16px', 
     boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
     display: 'flex', 
     flexDirection: 'column' 
   },
+  emptyCell: { backgroundColor: 'transparent' }, 
+
   dayNumber: { fontSize: '1.1rem', marginBottom: '10px', fontWeight: 'bold', color: '#444' },
   eventContainer: { display: 'flex', flexDirection: 'column', gap: '6px' },
   eventItem: {
@@ -257,10 +321,17 @@ const styles = {
   },
 
   // 일정 추가(Add) 섹션 스타일
+  addWrapper: { display: 'flex', gap: '40px', justifyContent: 'center', flexWrap: 'wrap' },
+  
   addSection: {
     backgroundColor: '#fff', padding: '30px', borderRadius: '20px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.03)', maxWidth: '600px', margin: '0 auto'
+    boxShadow: '0 4px 15px rgba(0,0,0,0.03)', width: '100%', maxWidth: '500px'
   },
+  listSection: {
+    backgroundColor: '#f5f5f5', padding: '30px', borderRadius: '20px',
+    width: '100%', maxWidth: '500px'
+  },
+  
   sectionTitle: { fontSize: '1.3rem', fontWeight: 'bold', margin: '0 0 10px 0' },
   sectionDesc: { color: '#666', marginBottom: '30px' },
   formCard: { display: 'flex', flexDirection: 'column', gap: '20px' },
@@ -274,7 +345,7 @@ const styles = {
   listContainer: { display: 'flex', flexDirection: 'column', gap: '10px' },
   listItem: {
     padding: '15px', border: '1px solid #eee', borderRadius: '12px',
-    display: 'flex', alignItems: 'center', gap: '15px', backgroundColor: '#fafafa'
+    display: 'flex', alignItems: 'center', gap: '15px', backgroundColor: '#fff'
   },
   listDate: { fontWeight: 'bold', color: '#333', minWidth: '100px' },
   listContent: { display: 'flex', flexDirection: 'column', gap: '2px' },
