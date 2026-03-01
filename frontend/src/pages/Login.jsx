@@ -3,12 +3,30 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [userId, setUserId] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // 로그인 로직이 들어갈 자리
-    if (userId) navigate('/main');
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        // 실제로는 여기서 받은 토큰이나 유저 정보를 저장해야 합니다 (Context API or LocalStorage)
+        localStorage.setItem('user', JSON.stringify(data));
+        navigate('/main');
+      } else {
+        alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+      }
+    } catch (error) {
+      console.error('Login Error:', error);
+      alert('로그인 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -24,21 +42,27 @@ const Login = () => {
               type="text" 
               placeholder="아이디를 입력하세요" 
               style={styles.input}
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           
           <div style={styles.inputGroup}>
             <label style={styles.label}>Password (비밀번호)</label>
-            <input type="password" placeholder="••••••••" style={styles.input} />
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              style={styles.input}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
 
           <button type="submit" style={styles.loginButton}>로그인</button>
         </form>
 
         <div style={styles.footerLinks}>
-          <span>회원가입</span> | <span>아이디/비밀번호 찾기</span>
+          <span onClick={() => navigate('/register')}>회원가입</span> | <span>아이디/비밀번호 찾기</span>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Start from './pages/Start.jsx';
 import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 import Main from './pages/Main.jsx';
 import Calendar from './pages/Calendar.jsx';
 import PlayerStats from './pages/Team/PlayerStats.jsx';
@@ -17,6 +18,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Start />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/main" element={<Main />} />
         {/* 기존 매칭 페이지는 남겨두었습니다. 필요 없다면 지우셔도 됩니다. */}
         <Route path="/match" element={<Match />} />

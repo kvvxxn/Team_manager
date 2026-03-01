@@ -36,8 +36,11 @@ class FinanceType(str, Enum):
 
 # User Schemas
 class UserBase(BaseModel):
+    username: str
     name: str
-    position: Optional[str] = None
+    phone_number: Optional[str] = None
+    position_football: Optional[str] = "ALL"
+    position_futsal: Optional[str] = "ALL"
     role: Optional[UserRole] = UserRole.MEMBER
     rank_tier: Optional[RankTier] = RankTier.AMATEUR
     matches_played: Optional[int] = 0
@@ -45,7 +48,11 @@ class UserBase(BaseModel):
     assists: Optional[int] = 0
 
 class UserCreate(UserBase):
-    pass
+    password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
 
 class User(UserBase):
     id: int

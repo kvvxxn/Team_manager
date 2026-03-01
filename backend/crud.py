@@ -1,16 +1,25 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from . import models, schemas
+from .auth import get_password_hash # Import password hashing function
 from datetime import datetime
 
 # --- Players ---
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
 def get_players(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).order_by(models.User.rank_tier.desc(), models.User.goals.desc()).offset(skip).limit(limit).all()
 
 def create_player(db: Session, user: schemas.UserCreate):
+    hashed_password = get_password_hash(user.password)
     db_user = models.User(
+        username=user.username,
+        hashed_password=hashed_password,
         name=user.name,
-        position=user.position,
+        phone_number=user.phone_number,
+        position_football=user.position_football,
+        position_futsal=user.position_futsal,
         role=user.role,
         rank_tier=user.rank_tier,
         matches_played=user.matches_played,

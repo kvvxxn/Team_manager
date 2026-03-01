@@ -37,8 +37,12 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, index=True, nullable=False) # 아이디 (ID)
+    hashed_password = Column(String(100), nullable=False) # 비밀번호
     name = Column(String(50), nullable=False)
-    position = Column(String(50))
+    phone_number = Column(String(20), nullable=True) # 전화번호
+    position_football = Column(String(50), default="ALL") # 희망 포지션 (축구)
+    position_futsal = Column(String(50), default="ALL") # 희망 포지션 (풋살)
     role = Column(SqlEnum(UserRole), default=UserRole.MEMBER)
     rank_tier = Column(SqlEnum(RankTier), default=RankTier.AMATEUR)
     matches_played = Column(Integer, default=0)
