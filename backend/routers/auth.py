@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from .. import crud, models, schemas
-from ..database import get_db
-from ..auth import verify_password
+import crud, models, schemas
+from database import get_db
+from auth import verify_password
 
 router = APIRouter(
     prefix="/api/auth",

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from . import models, schemas
-from .auth import get_password_hash # Import password hashing function
+import models, schemas
+from auth import get_password_hash # Import password hashing function
 from datetime import datetime
 
 # --- Players ---
