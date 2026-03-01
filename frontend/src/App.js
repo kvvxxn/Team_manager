@@ -11,6 +11,7 @@ import Finance from './pages/Team/Finance.jsx';
 import Admin from './pages/Team/Admin.jsx';
 import Settings from './pages/Settings.jsx';
 import Match from './pages/Match.jsx';
+import TeamSetup from './pages/Team/TeamSetup.jsx';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/match" element={<Match />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/team/stats" element={<PlayerStats />} />
+        <Route path="/team/setup" element={<TeamSetup />} />
         
         {/* 💡 이 부분의 경로를 /team/match-vote 로 수정했습니다! */}
         <Route path="/team/match-vote" element={<MatchVote />} />

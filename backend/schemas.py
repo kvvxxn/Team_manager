@@ -41,7 +41,7 @@ class UserBase(BaseModel):
     phone_number: Optional[str] = None
     position_football: Optional[str] = "ALL"
     position_futsal: Optional[str] = "ALL"
-    team_name: Optional[str] = None
+    team_id: Optional[int] = None
     role: Optional[UserRole] = UserRole.MEMBER
     rank_tier: Optional[RankTier] = RankTier.AMATEUR
     matches_played: Optional[int] = 0
@@ -111,5 +111,42 @@ class FinanceCreate(FinanceBase):
 class Finance(FinanceBase):
     id: int
 
+    class Config:
+        from_attributes = True
+
+# Team Schemas
+class TeamBase(BaseModel):
+    name: str
+    monthly_fee: Optional[int] = 0
+
+class TeamCreate(TeamBase):
+    pass
+
+class Team(TeamBase):
+    id: int
+    emblem: Optional[str] = None
+    created_at: datetime
+    # members: List[User] = []
+
+    class Config:
+        from_attributes = True
+
+class RequestStatus(str, Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+class TeamJoinRequestBase(BaseModel):
+    team_id: int
+
+class TeamJoinRequestCreate(TeamJoinRequestBase):
+    pass
+
+class TeamJoinRequest(TeamJoinRequestBase):
+    id: int
+    user_id: int
+    status: RequestStatus
+    created_at: datetime
+    
     class Config:
         from_attributes = True

@@ -25,6 +25,10 @@ def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     if not verify_password(user_credentials.password, user.hashed_password):
         raise HTTPException(status_code=403, detail="Invalid Credentials")
     
+    team_info = None
+    if user.team:
+        team_info = { "id": user.team.id, "name": user.team.name, "emblem": user.team.emblem }
+
     # For simplicity, returning user data. In production, return JWT token.
     return {
         "message": "Login successful", 
@@ -34,5 +38,5 @@ def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
         "role": user.role,
         "position_football": user.position_football,
         "position_futsal": user.position_futsal,
-        "team": user.team_name # 데이터베이스 실제 값 반환
+        "team": team_info # 팀 정보 객체 반환
     }

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, Date, Enum as SqlEnum, ForeignKey
 from sqlalchemy.orm import relationship
 import enum
+from datetime import datetime
 from database import Base
 
 class UserRole(str, enum.Enum):
@@ -33,6 +34,37 @@ class FinanceType(str, enum.Enum):
     INCOME = "INCOME"
     EXPENSE = "EXPENSE"
 
+class RequestStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+
+class Team(Base):
+    __tablename__ = "teams"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, index=True, nullable=False)
+    emblem = Column(String(255), nullable=True) # 파일 경로 또는 URL
+    monthly_fee = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    members = relationship("User", back_populates="team")
+    join_requests = relationship("TeamJoinRequest", back_populates="team")
+
+class TeamJoinRequest(Base):
+    __tablename__ = "team_join_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
+    status = Column(SqlEnum(RequestStatus), default=RequestStatus.PENDING)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    user = relationship("User", back_populates="join_requests")
+    team = relationship("Team", back_populates="join_requests")
+
 class User(Base):
     __tablename__ = "users"
 
@@ -45,12 +77,16 @@ class User(Base):
     position_futsal = Column(String(50), default="ALL") # 희망 포지션 (풋살)
     role = Column(SqlEnum(UserRole), default=UserRole.MEMBER)
     rank_tier = Column(SqlEnum(RankTier), default=RankTier.AMATEUR)
-    team_name = Column(String(100), nullable=True) # 소속팀 이름
+    # team_name = Column(String(100), nullable=True) # Deprecated
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
+
     matches_played = Column(Integer, default=0)
     goals = Column(Integer, default=0)
     assists = Column(Integer, default=0)
 
     # Relationships
+    team = relationship("Team", back_populates="members")
+    join_requests = relationship("TeamJoinRequest", back_populates="user")
     votes = relationship("MatchVote", back_populates="user")
     finances = relationship("Finance", back_populates="user")
     mom_matches = relationship("Match", back_populates="mom_user", foreign_keys="Match.mom_user_id")

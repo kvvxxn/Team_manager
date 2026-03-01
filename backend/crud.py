@@ -20,7 +20,7 @@ def create_player(db: Session, user: schemas.UserCreate):
         phone_number=user.phone_number,
         position_football=user.position_football,
         position_futsal=user.position_futsal,
-        team_name=user.team_name,
+        # team_id is None by default
         role=user.role,
         rank_tier=user.rank_tier,
         matches_played=user.matches_played,
@@ -95,7 +95,72 @@ def create_finance(db: Session, finance: schemas.FinanceCreate):
     db.refresh(db_finance)
     return db_finance
 
-def get_finance_summary(db: Session):
+# --- Teams ---
+def get_teams(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Team).offset(skip).limit(limit).all()
+
+def create_team(db: Session, team: schemas.TeamCreate, creator_id: int, emblem_path: str = None):
+    # 1. Create Team
+    db_team = models.Team(
+        name=team.name,
+        monthly_fee=team.monthly_fee,
+        emblem=emblem_path
+    )
+    db.add(db_team)
+    db.commit()
+    db.refresh(db_team)
+
+    # 2. Assign creator as ADMIN of the team
+    db_user = db.query(models.User).filter(models.User.id == creator_id).first()
+    if db_user:
+        db_user.team_id = db_team.id
+        db_user.role = models.UserRole.ADMIN # Set role to ADMIN
+        db.commit()
+    
+    return db_team
+
+def create_join_request(db: Session, user_id: int, team_id: int):
+    # Check if request already exists
+    existing_request = db.query(models.TeamJoinRequest).filter(
+        models.TeamJoinRequest.user_id == user_id, 
+        models.TeamJoinRequest.team_id == team_id,
+        models.TeamJoinRequest.status == models.RequestStatus.PENDING
+    ).first()
+    
+    if existing_request:
+        return existing_request # Already pending
+
+    db_request = models.TeamJoinRequest(
+        user_id=user_id,
+        team_id=team_id
+    )
+    db.add(db_request)
+    db.commit()
+    db.refresh(db_request)
+    return db_request
+
+def get_join_requests(db: Session, team_id: int):
+    return db.query(models.TeamJoinRequest).filter(
+        models.TeamJoinRequest.team_id == team_id,
+        models.TeamJoinRequest.status == models.RequestStatus.PENDING
+    ).all()
+
+def process_join_request(db: Session, request_id: int, status: str): # status: APPROVED or REJECTED
+    request = db.query(models.TeamJoinRequest).filter(models.TeamJoinRequest.id == request_id).first()
+    if not request:
+        return None
+    
+    request.status = status
+    
+    if status == models.RequestStatus.APPROVED:
+        # Add user to team
+        user = db.query(models.User).filter(models.User.id == request.user_id).first()
+        if user:
+            user.team_id = request.team_id
+            user.role = models.UserRole.MEMBER
+            
+    db.commit()
+    return request
     # Aggregate logic for summary
     income = db.query(func.sum(models.Finance.amount)).filter(models.Finance.type == models.FinanceType.INCOME).scalar() or 0
     expense = db.query(func.sum(models.Finance.amount)).filter(models.Finance.type == models.FinanceType.EXPENSE).scalar() or 0

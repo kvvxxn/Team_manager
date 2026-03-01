@@ -3,6 +3,21 @@ import { useNavigate } from 'react-router-dom';
 
 const Main = () => {
   const navigate = useNavigate();
+  
+  // 유저 정보 확인
+  const handleMyTeamClick = () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.team) {
+            navigate('/team/stats');
+        } else {
+            navigate('/team/setup');
+        }
+    } else {
+        navigate('/login');
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -17,7 +32,7 @@ const Main = () => {
           <h2>캘린더</h2>
           <p>경기 일정 및 주요 행사</p>
         </div>
-        <div style={{ ...styles.card, backgroundColor: '#e3f2fd' }} onClick={() => navigate('/team/stats')}>
+        <div style={{ ...styles.card, backgroundColor: '#e3f2fd' }} onClick={handleMyTeamClick}>
           <span style={styles.icon}>👥</span>
           <h2>나의 팀</h2>
           <p>선수 명단 및 기록 확인</p>
