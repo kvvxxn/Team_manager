@@ -7,11 +7,12 @@ services:
     container_name: team_manager_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword      # 최고 관리자 비밀번호
-      MYSQL_DATABASE: team_manager           # 생성할 데이터베이스 이름
-      MYSQL_USER: team_user                  # 사용할 유저 이름
-      MYSQL_PASSWORD: team_password          # 유저 비밀번호
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
+
       - "3306:3306"                          # 내 컴퓨터 포트 : 컨테이너 포트
     volumes:
       - mysql_data:/var/lib/mysql            # DB 데이터가 날아가지 않도록 저장소 연결
@@ -30,9 +31,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: mysql+pymysql://team_user:team_password@db/team_manager
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - .:/app
+
 
 volumes:
   mysql_data:
