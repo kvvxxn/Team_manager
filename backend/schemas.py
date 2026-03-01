@@ -145,6 +145,7 @@ class TeamJoinRequestCreate(TeamJoinRequestBase):
 class TeamJoinRequest(TeamJoinRequestBase):
     id: int
     user_id: int
+    user: Optional[User] = None
     status: RequestStatus
     created_at: datetime
     

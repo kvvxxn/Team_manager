@@ -8,8 +8,11 @@ from datetime import datetime
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
-def get_players(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).order_by(models.User.rank_tier.desc(), models.User.goals.desc()).offset(skip).limit(limit).all()
+def get_players(db: Session, skip: int = 0, limit: int = 100, team_id: int = None):
+    query = db.query(models.User)
+    if team_id:
+        query = query.filter(models.User.team_id == team_id)
+    return query.order_by(models.User.rank_tier.desc(), models.User.goals.desc()).offset(skip).limit(limit).all()
 
 def create_player(db: Session, user: schemas.UserCreate):
     hashed_password = get_password_hash(user.password)
@@ -161,6 +164,25 @@ def process_join_request(db: Session, request_id: int, status: str): # status: A
             
     db.commit()
     return request
+
+def update_user_role(db: Session, user_id: int, new_role: str):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user:
+        user.role = new_role
+        db.commit()
+        db.refresh(user)
+    return user
+
+def remove_user_from_team(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user:
+        user.team_id = None
+        user.role = models.UserRole.MEMBER # Reset role to default member behavior (or NONE if you have it)
+        db.commit()
+        db.refresh(user)
+    return user
+
+def get_finance_summary(db: Session):
     # Aggregate logic for summary
     income = db.query(func.sum(models.Finance.amount)).filter(models.Finance.type == models.FinanceType.INCOME).scalar() or 0
     expense = db.query(func.sum(models.Finance.amount)).filter(models.Finance.type == models.FinanceType.EXPENSE).scalar() or 0

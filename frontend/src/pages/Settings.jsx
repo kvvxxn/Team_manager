@@ -53,7 +53,7 @@ const Settings = () => {
           </div>
           <div style={styles.infoRow}>
             <span style={styles.label}>소속팀</span>
-            <span style={styles.value}>{user.team || '소속팀 없음'}</span>
+            <span style={styles.value}>{user.team ? user.team.name : '소속팀 없음'}</span>
           </div>
           {/* <button style={styles.editBtn}>프로필 수정</button> */}
         </section>
