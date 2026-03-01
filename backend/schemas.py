@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from enum import Enum
 
 # Forward references for models
@@ -8,6 +8,7 @@ class UserRole(str, Enum):
     ADMIN = "ADMIN"
     MANAGER = "MANAGER"
     MEMBER = "MEMBER"
+    GENERAL_AFFAIRS = "GENERAL_AFFAIRS"
 
 class RankTier(str, Enum):
     AMATEUR = "AMATEUR"
@@ -100,19 +101,22 @@ class MatchVote(MatchVoteBase):
 # Finance Schemas
 class FinanceBase(BaseModel):
     user_id: int
+    team_id: int
     type: FinanceType
     amount: int
     description: Optional[str] = None
-    date: datetime
+    date: date # Use date type directly
 
 class FinanceCreate(FinanceBase):
     pass
 
 class Finance(FinanceBase):
     id: int
+    user: Optional[User] = None
 
     class Config:
         from_attributes = True
+
 
 # Team Schemas
 class TeamBase(BaseModel):

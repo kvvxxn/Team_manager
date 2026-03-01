@@ -27,7 +27,12 @@ def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     
     team_info = None
     if user.team:
-        team_info = { "id": user.team.id, "name": user.team.name, "emblem": user.team.emblem }
+        team_info = { 
+            "id": user.team.id, 
+            "name": user.team.name, 
+            "emblem": user.team.emblem,
+            "monthly_fee": user.team.monthly_fee 
+        }
 
     # For simplicity, returning user data. In production, return JWT token.
     return {

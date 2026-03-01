@@ -182,8 +182,75 @@ def remove_user_from_team(db: Session, user_id: int):
         db.refresh(user)
     return user
 
-def get_finance_summary(db: Session):
-    # Aggregate logic for summary
-    income = db.query(func.sum(models.Finance.amount)).filter(models.Finance.type == models.FinanceType.INCOME).scalar() or 0
-    expense = db.query(func.sum(models.Finance.amount)).filter(models.Finance.type == models.FinanceType.EXPENSE).scalar() or 0
-    return {"income": income, "expense": expense, "balance": income - expense}
+def get_finances_by_month(db: Session, team_id: int, year: int, month: int):
+    start_date = date(year, month, 1)
+    if month == 12:
+        end_date = date(year + 1, 1, 1)
+    else:
+        end_date = date(year, month + 1, 1)
+        
+    return db.query(models.Finance).filter(
+        models.Finance.team_id == team_id,
+        models.Finance.date >= start_date,
+        models.Finance.date < end_date
+    ).order_by(models.Finance.date).all()
+
+def get_finance_summary(db: Session, team_id: int, year: int, month: int):
+    from datetime import date
+    
+    start_of_month = date(year, month, 1)
+    if month == 12:
+        end_of_month = date(year + 1, 1, 1)
+    else:
+        end_of_month = date(year, month + 1, 1)
+
+    # 1. Previous Balance (Sum of all income - expenses before this month)
+    prev_income = db.query(func.sum(models.Finance.amount)).filter(
+        models.Finance.team_id == team_id,
+        models.Finance.type == models.FinanceType.INCOME,
+        models.Finance.date < start_of_month
+    ).scalar() or 0
+    
+    prev_expense = db.query(func.sum(models.Finance.amount)).filter(
+        models.Finance.team_id == team_id,
+        models.Finance.type == models.FinanceType.EXPENSE,
+        models.Finance.date < start_of_month
+    ).scalar() or 0
+    
+    previous_balance = prev_income - prev_expense
+
+    # 2. Current Month Income/Expense
+    current_income = db.query(func.sum(models.Finance.amount)).filter(
+        models.Finance.team_id == team_id,
+        models.Finance.type == models.FinanceType.INCOME,
+        models.Finance.date >= start_of_month,
+        models.Finance.date < end_of_month
+    ).scalar() or 0
+    
+    current_expense = db.query(func.sum(models.Finance.amount)).filter(
+        models.Finance.team_id == team_id,
+        models.Finance.type == models.FinanceType.EXPENSE,
+        models.Finance.date >= start_of_month,
+        models.Finance.date < end_of_month
+    ).scalar() or 0
+
+    return {
+        "previous_balance": previous_balance,
+        "current_income": current_income,
+        "current_expense": current_expense,
+        "total_balance": previous_balance + current_income - current_expense
+    }
+
+def create_finance(db: Session, finance: schemas.FinanceCreate):
+    db_finance = models.Finance(
+        user_id=finance.user_id,
+        team_id=finance.team_id,
+        type=finance.type,
+        amount=finance.amount,
+        description=finance.description,
+        date=finance.date
+    )
+    db.add(db_finance)
+    db.commit()
+    db.refresh(db_finance)
+    return db_finance

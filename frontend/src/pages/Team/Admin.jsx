@@ -52,15 +52,6 @@ const Admin = () => {
       const response = await fetch(`http://localhost:8000/api/teams/${teamId}/requests`);
       if (response.ok) {
         const data = await response.json();
-        // user details are needed for display. Currently API returns request object.
-        // Assuming request object has user_id, we might need to fetch user details or enrich backend response.
-        // However, looking at the previous backend code for get_join_requests, it returns TeamJoinRequest model.
-        // This model only has user_id. We need user name.
-        // Let's assume for now we might need to update backend to include user info or fetch separately.
-        // Wait, I can update the backend schema to include user info.
-        // For now, let's keep it simple and see if the frontend breaks.
-        // Actually, without user name, the request list is useless.
-        // I will assume the backend returns basic info or I'll fix the backend next.
         setRequests(data); 
       }
     } catch (error) {
@@ -164,7 +155,6 @@ const Admin = () => {
               {requests.map(req => (
                 <li key={req.id} style={styles.reqItem}>
                   <div style={styles.reqInfo}>
-                    {/* Backend should ideally return user name. For now displaying ID if name missing */}
                     <span style={styles.reqName}>{req.user ? req.user.name : `User ID: ${req.user_id}`}</span>
                     <span style={styles.reqDate}>요청일: {req.created_at ? new Date(req.created_at).toLocaleDateString() : '최근'}</span>
                   </div>
@@ -208,11 +198,23 @@ const Admin = () => {
                     >
                       <option value="ADMIN">👑 관리자</option>
                       <option value="MANAGER">🛡️ 운영진</option>
+                      <option value="GENERAL_AFFAIRS">💼 총무</option>
                       <option value="MEMBER">👤 회원</option>
                     </select>
                   </td>
                   <td>
-                    <button onClick={() => handleDelete(member.id)} style={styles.deleteBtn}>추방</button>
+                    {/* 관리자가 본인을 삭제하지 못하도록 예외 처리 적용 */}
+                    <button 
+                      onClick={() => handleDelete(member.id)} 
+                      style={{
+                        ...styles.deleteBtn, 
+                        opacity: member.id === user?.id ? 0.5 : 1, 
+                        cursor: member.id === user?.id ? 'not-allowed' : 'pointer'
+                      }}
+                      disabled={member.id === user?.id}
+                    >
+                      {member.id === user?.id ? '본인' : '추방'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -227,7 +229,7 @@ const Admin = () => {
 const styles = {
   pageWrapper: { backgroundColor: '#f9f9f9', minHeight: '100vh', paddingBottom: '40px' },
   container: { padding: '20px 40px', maxWidth: '1000px', margin: '0 auto' },
-  mainTitle: { fontSize: '1.8rem', fontWeight: 'bold', color: '#333', marginBottom: '30px' },
+  mainTitle: { fontSize: '1.8rem', fontWeight: 'bold', color: '#333', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' },
   
   section: { 
     backgroundColor: '#fff', padding: '25px', borderRadius: '15px', marginBottom: '30px',
@@ -240,7 +242,7 @@ const styles = {
   },
   
   // Requests List
-  reqList: { listStyle: 'none', padding: 0 },
+  reqList: { listStyle: 'none', padding: 0, margin: 0 },
   reqItem: { 
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
     padding: '15px 0', borderBottom: '1px solid #eee' 
@@ -259,9 +261,9 @@ const styles = {
   },
 
   // Table
-  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'center' },
-  thRow: { backgroundColor: '#f8f9fa', borderBottom: '2px solid #eee' },
-  tdRow: { borderBottom: '1px solid #f1f1f1' },
+  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'center', marginTop: '10px' },
+  thRow: { backgroundColor: '#f8f9fa', borderBottom: '2px solid #eee', height: '45px', color: '#666', fontSize: '0.95rem' },
+  tdRow: { borderBottom: '1px solid #f1f1f1', height: '60px' },
   nameCell: { fontWeight: 'bold', color: '#333' },
   
   adminSelect: { 
@@ -274,95 +276,8 @@ const styles = {
   },
   
   deleteBtn: {
-    padding: '5px 10px', backgroundColor: '#ff6b6b', color: '#fff', border: 'none',
-    borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem'
-  }
-};
-
-export default Admin;
-                  <td>
-                    {/* 관리자가 본인을 삭제하지 못하도록 예외 처리 가능 */}
-                    <button 
-                      onClick={() => handleDelete(member.id)} 
-                      style={styles.deleteBtn}
-                    >
-                      삭제
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </div>
-    </div>
-  );
-};
-
-const styles = {
-  pageWrapper: { backgroundColor: '#f9f9f9', minHeight: '100vh' },
-  container: { padding: '20px 40px' },
-  mainTitle: { marginBottom: '30px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' },
-  section: { 
-    backgroundColor: '#fff', padding: '25px', borderRadius: '15px', 
-    boxShadow: '0 4px 12px rgba(0,0,0,0.05)', marginBottom: '30px' 
-  },
-  sectionTitle: { fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '20px', color: '#333' },
-  form: { display: 'flex', gap: '15px' },
-  input: { flex: 2, padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' },
-  select: { flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' },
-  
-  adminSelect: { 
-    padding: '8px', borderRadius: '8px', border: '1px solid #e57373', 
-    backgroundColor: '#ffebee', color: '#d32f2f', fontWeight: 'bold', cursor: 'pointer' 
-  },
-  memberSelect: { 
-    padding: '8px', borderRadius: '8px', border: '1px solid #ddd', 
-    backgroundColor: '#fff', color: '#333', cursor: 'pointer' 
-  },
-
-  // 기록 승인 관련 스타일
-  badge: {
-    backgroundColor: '#ff5252', color: '#fff', fontSize: '0.8rem', padding: '2px 8px', 
-    borderRadius: '12px', marginLeft: '5px', verticalAlign: 'middle'
-  },
-  reqList: { listStyle: 'none', padding: 0, margin: 0 },
-  reqItem: {
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-    padding: '12px 15px', borderBottom: '1px solid #eee'
-  },
-  reqInfo: { display: 'flex', gap: '15px', alignItems: 'center' },
-  reqName: { fontWeight: 'bold' },
-  reqDate: { fontSize: '0.9rem', color: '#666' },
-  reqStats: { fontSize: '0.9rem', fontWeight: 'bold', color: '#1976D2' },
-  reqActions: { display: 'flex', gap: '8px' },
-  approveBtn: {
-    backgroundColor: '#4CAF50', color: '#fff', border: 'none', padding: '6px 12px',
-    borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem'
-  },
-  rejectBtn: {
-    backgroundColor: '#ef5350', color: '#fff', border: 'none', padding: '6px 12px',
-    borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem'
-  },
-
-  addBtn: { padding: '12px 25px', backgroundColor: '#333', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' },
-  
-  table: { width: '100%', borderCollapse: 'collapse', marginTop: '10px' },
-  thRow: { borderBottom: '2px solid #eee', textAlign: 'left', height: '45px', color: '#888', fontSize: '0.9rem' },
-  tdRow: { borderBottom: '1px solid #f5f5f5', height: '60px' },
-  nameCell: { fontWeight: 'bold', color: '#333' },
-  adminBadge: { 
-    padding: '5px 12px', backgroundColor: '#F3E5F5', color: '#9C27B0', 
-    borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold' 
-  },
-  memberBadge: { 
-    padding: '5px 12px', backgroundColor: '#F5F5F5', color: '#666', 
-    borderRadius: '20px', fontSize: '0.85rem' 
-  },
-  deleteBtn: { 
-    padding: '6px 12px', backgroundColor: 'transparent', color: '#FF5252', 
-    border: '1px solid #FF5252', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem',
-    transition: '0.2s'
+    padding: '6px 12px', backgroundColor: '#ff6b6b', color: '#fff', border: 'none',
+    borderRadius: '6px', fontSize: '0.85rem', transition: '0.2s'
   }
 };
 
