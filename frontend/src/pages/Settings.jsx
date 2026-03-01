@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        // 로컬 스토리지에서 유저 정보 가져오기
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        } else {
+            // 로그인 정보가 없으면 로그인 페이지로 이동
+            navigate('/');
+        }
+    }, [navigate]);
+
+    const handleLogout = () => {
+        if (window.confirm('로그아웃 하시겠습니까?')) {
+            localStorage.removeItem('user');
+            navigate('/');
+        }
+    };
+
+    if (!user) return <div>Loading...</div>;
 
   return (
     <div style={styles.pageWrapper}>
@@ -20,25 +41,27 @@ const Settings = () => {
           <h3 style={styles.sectionTitle}>내 프로필</h3>
           <div style={styles.infoRow}>
             <span style={styles.label}>이름</span>
-            <span style={styles.value}>김민수</span>
+            <span style={styles.value}>{user.name}</span>
           </div>
           <div style={styles.infoRow}>
-            <span style={styles.label}>포지션</span>
-            <span style={styles.value}>PIVO (FW)</span>
+            <span style={styles.label}>포지션 (축구)</span>
+            <span style={styles.value}>{user.position_football}</span>
+          </div>
+          <div style={styles.infoRow}>
+            <span style={styles.label}>포지션 (풋살)</span>
+            <span style={styles.value}>{user.position_futsal}</span>
           </div>
           <div style={styles.infoRow}>
             <span style={styles.label}>소속팀</span>
-            <span style={styles.value}>FC 개발자</span>
+            <span style={styles.value}>{user.team || '소속팀 없음'}</span>
           </div>
-          <button style={styles.editBtn}>프로필 수정</button>
+          {/* <button style={styles.editBtn}>프로필 수정</button> */}
         </section>
 
         {/* 로그아웃 버튼 */}
         <button 
           style={styles.logoutBtn} 
-          onClick={() => {
-            if(window.confirm('로그아웃 하시겠습니까?')) navigate('/');
-          }}
+          onClick={handleLogout}
         >
           로그아웃
         </button>

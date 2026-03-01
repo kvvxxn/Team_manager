@@ -45,6 +45,7 @@ class User(Base):
     position_futsal = Column(String(50), default="ALL") # 희망 포지션 (풋살)
     role = Column(SqlEnum(UserRole), default=UserRole.MEMBER)
     rank_tier = Column(SqlEnum(RankTier), default=RankTier.AMATEUR)
+    team_name = Column(String(100), nullable=True) # 소속팀 이름
     matches_played = Column(Integer, default=0)
     goals = Column(Integer, default=0)
     assists = Column(Integer, default=0)

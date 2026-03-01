@@ -41,6 +41,7 @@ class UserBase(BaseModel):
     phone_number: Optional[str] = None
     position_football: Optional[str] = "ALL"
     position_futsal: Optional[str] = "ALL"
+    team_name: Optional[str] = None
     role: Optional[UserRole] = UserRole.MEMBER
     rank_tier: Optional[RankTier] = RankTier.AMATEUR
     matches_played: Optional[int] = 0

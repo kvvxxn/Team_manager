@@ -26,4 +26,13 @@ def login(user_credentials: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Invalid Credentials")
     
     # For simplicity, returning user data. In production, return JWT token.
-    return {"message": "Login successful", "user_id": user.id, "username": user.username, "role": user.role}
+    return {
+        "message": "Login successful", 
+        "user_id": user.id, 
+        "username": user.username, 
+        "name": user.name,
+        "role": user.role,
+        "position_football": user.position_football,
+        "position_futsal": user.position_futsal,
+        "team": user.team_name # 데이터베이스 실제 값 반환
+    }

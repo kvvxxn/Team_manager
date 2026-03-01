@@ -20,6 +20,7 @@ def create_player(db: Session, user: schemas.UserCreate):
         phone_number=user.phone_number,
         position_football=user.position_football,
         position_futsal=user.position_futsal,
+        team_name=user.team_name,
         role=user.role,
         rank_tier=user.rank_tier,
         matches_played=user.matches_played,
