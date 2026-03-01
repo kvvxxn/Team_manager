@@ -8,6 +8,7 @@ class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     MANAGER = "MANAGER"
     MEMBER = "MEMBER"
+    GENERAL_AFFAIRS = "GENERAL_AFFAIRS"
 
 class RankTier(str, enum.Enum):
     AMATEUR = "AMATEUR"
@@ -51,6 +52,7 @@ class Team(Base):
     # Relationships
     members = relationship("User", back_populates="team")
     join_requests = relationship("TeamJoinRequest", back_populates="team")
+    finances = relationship("Finance", back_populates="team")
 
 class TeamJoinRequest(Base):
     __tablename__ = "team_join_requests"
@@ -127,6 +129,7 @@ class Finance(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False) # Add team_id
     type = Column(SqlEnum(FinanceType), nullable=False)
     amount = Column(Integer, nullable=False)
     description = Column(String(200))
@@ -134,3 +137,5 @@ class Finance(Base):
 
     # Relationships
     user = relationship("User", back_populates="finances")
+    team = relationship("Team", back_populates="finances")
+

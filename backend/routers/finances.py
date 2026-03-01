@@ -9,15 +9,24 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/summary", response_model=dict)
-def read_finances_summary(db: Session = Depends(get_db)):
-    summary = crud.get_finance_summary(db)
-    return summary
+@router.get("/", response_model=list[schemas.Finance])
+def read_finances(
+    team_id: int, 
+    year: int, 
+    month: int, 
+    db: Session = Depends(get_db)
+):
+    return crud.get_finances_by_month(db, team_id=team_id, year=year, month=month)
 
-@router.get("/members", response_model=list[schemas.Finance])
-def read_finance_members(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    finances = crud.get_finances(db, skip=skip, limit=limit)
-    return finances
+@router.get("/summary", response_model=dict)
+def read_finances_summary(
+    team_id: int,
+    year: int,
+    month: int,
+    db: Session = Depends(get_db)
+):
+    summary = crud.get_finance_summary(db, team_id=team_id, year=year, month=month)
+    return summary
 
 @router.post("/", response_model=schemas.Finance)
 def create_finance(finance: schemas.FinanceCreate, db: Session = Depends(get_db)):

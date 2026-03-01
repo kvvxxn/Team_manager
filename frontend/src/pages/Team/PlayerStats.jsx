@@ -1,15 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import TeamHeader from '../../components/TeamHeader';
 
-const players = [
-  { id: 1, name: '권도현', position: 'PIVO (FW)', games: 12, goals: 8, assists: 4, role: '관리자', rank: '월드클래스' },
-  { id: 2, name: '이재희', position: 'ALA (MF)', games: 10, goals: 3, assists: 7, role: '회원', rank: '프로' },
-  { id: 3, name: '김연준', position: 'FIXO (DF)', games: 15, goals: 1, assists: 2, role: '회원', rank: '아마추어' },
-  { id: 4, name: '문민석', position: 'GOLEIRO (GK)', games: 14, goals: 0, assists: 1, role: '회원', rank: '세미프로' },
-];
-
 const PlayerStats = () => {
+  const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+     const storedUser = localStorage.getItem('user');
+     if (storedUser) {
+         const parsedUser = JSON.parse(storedUser);
+         setUser(parsedUser);
+         if (parsedUser.team) {
+             setCurrentTeam(parsedUser.team);
+             fetchTeamMembers(parsedUser.team.id);
+         } else {
+             // 팀이 없으면 팀 설정 페이지로 리다이렉트
+             navigate('/team/setup');
+         }
+     } else {
+         navigate('/login');
+     }
+  }, [navigate]);
+
+  const fetchTeamMembers = async (teamId) => {
+      try {
+          const response = await fetch(`http://localhost:8000/api/players?team_id=${teamId}`);
+          if (response.ok) {
+              const data = await response.json();
+              setPlayers(data);
+          }
+      } catch (error) {
+          console.error("Failed to fetch players", error);
+      }
+  };
   
   // 랭크별 스타일을 결정하는 함수
   const getRankStyle = (rank) => {
@@ -51,8 +78,12 @@ const PlayerStats = () => {
       <div style={styles.container}>
         <header style={styles.header}>
           <div style={styles.logoBox}>
-            <div style={styles.teamLogo}>⚽</div>
-            <h2 style={styles.teamName}>우리 풋살 FC</h2>
+            {currentTeam && currentTeam.emblem ? (
+                <img src={`http://localhost:8000/${currentTeam.emblem}`} alt="Team Logo" style={styles.teamLogoImg} />
+            ) : (
+                <div style={styles.teamLogo}>⚽</div>
+            )}
+            <h2 style={styles.teamName}>{currentTeam ? currentTeam.name : '팀 정보를 불러오는 중...'}</h2>
           </div>
           <div style={styles.pageTitle}>선수 명부 & 기록</div>
           
@@ -109,41 +140,43 @@ const PlayerStats = () => {
           </div>
         )}
 
-        <section style={styles.tableSection}>
+        {/* 기록 테이블 */}
+        <div style={styles.tableWrapper}>
           <table style={styles.table}>
             <thead>
               <tr style={styles.thRow}>
-                <th>이름</th>
-                <th>희망 포지션</th>
-                <th>출장 경기</th>
-                <th>득점</th>
-                <th>도움</th>
-                <th>등급</th>
-                <th>랭크</th>
+                <th style={styles.th}>이름</th>
+                <th style={styles.th}>포지션 (축구/풋살)</th>
+                <th style={styles.th}>출장 경기</th>
+                <th style={styles.th}>득점</th>
+                <th style={styles.th}>도움</th>
+                <th style={styles.th}>등급</th>
+                <th style={styles.th}>랭크</th>
               </tr>
             </thead>
             <tbody>
               {players.map((player) => (
-                <tr key={player.id} style={styles.tdRow}>
-                  <td style={styles.nameCell}>{player.name}</td>
-                  <td>{player.position}</td>
-                  <td>{player.games}</td>
-                  <td style={styles.goalCell}>{player.goals}</td>
-                  <td>{player.assists}</td>
-                  <td>
-                    <span style={player.role === '관리자' ? styles.roleAdmin : styles.roleMember}>
-                      {player.role}
+                <tr key={player.id} style={styles.tr}>
+                  <td style={styles.td}>
+                    {player.name}
+                  </td>
+                  <td style={styles.td}>{player.position_football} / {player.position_futsal}</td>
+                  <td style={styles.td}>{player.matches_played || 0}</td>
+                  <td style={styles.td}>{player.goals || 0}</td>
+                  <td style={styles.td}>{player.assists || 0}</td>
+                  <td style={styles.td}>
+                    <span style={player.role === 'ADMIN' ? styles.roleAdmin : styles.roleMember}>
+                      {player.role || 'MEMBER'}
                     </span>
                   </td>
-                  <td>
-                    {/* 함수를 통해 각 랭크에 맞는 스타일 적용 */}
-                    <span style={getRankStyle(player.rank)}>{player.rank}</span>
+                  <td style={styles.td}>
+                    <span style={getRankStyle(player.rank_tier)}>{player.rank_tier || 'AMATEUR'}</span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </section>
+        </div>
       </div>
     </div>
   );
@@ -152,22 +185,46 @@ const PlayerStats = () => {
 
 // 기존 스타일 유지 및 업데이트
 const styles = {
-  pageWrapper: { backgroundColor: '#f9f9f9', minHeight: '100vh' },
-  container: { padding: '20px 40px' },
+  pageWrapper: { backgroundColor: '#f9f9f9', minHeight: '100vh', paddingBottom: '40px' },
+  container: { padding: '20px 40px', maxWidth: '1200px', margin: '0 auto' },
   header: { 
     display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
-    marginBottom: '30px', backgroundColor: '#fff', padding: '20px',
-    borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+    marginBottom: '30px', backgroundColor: '#fff', padding: '20px 30px',
+    borderRadius: '15px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
   },
   logoBox: { display: 'flex', alignItems: 'center', gap: '15px' },
   teamLogo: { 
-    width: '50px', height: '50px', backgroundColor: '#333', borderRadius: '50%', 
-    display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '1.5rem', color: '#fff'
+    width: '60px', height: '60px', backgroundColor: '#333', borderRadius: '50%', 
+    display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '2rem', color: '#fff'
   },
-  teamName: { fontSize: '1.4rem', fontWeight: 'bold', margin: 0 },
-  pageTitle: { fontSize: '1rem', color: '#888', fontWeight: '500' },
+  teamLogoImg: { 
+    width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover',
+    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+  },
+  teamName: { fontSize: '1.5rem', fontWeight: '800', margin: 0, color: '#333' },
+  pageTitle: { fontSize: '1rem', color: '#888', fontWeight: 'bold' },
   
-  // 새로 추가된 버튼 스타일
+  tableWrapper: {
+    backgroundColor: '#fff', borderRadius: '15px', overflow: 'hidden',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+  },
+  table: { width: '100%', borderCollapse: 'collapse', textAlign: 'center' },
+  thRow: { backgroundColor: '#f8f9fa', borderBottom: '2px solid #eee' },
+  th: { padding: '15px', fontSize: '0.9rem', color: '#555', fontWeight: 'bold' },
+  tr: { borderBottom: '1px solid #f1f1f1', transition: 'background-color 0.2s' },
+  td: { padding: '15px', fontSize: '0.95rem', color: '#333' },
+  
+  // ROLE STYLES
+  roleAdmin: { 
+    backgroundColor: '#e3f2fd', color: '#1976d2', padding: '4px 10px', 
+    borderRadius: '12px', fontSize: '0.8rem', fontWeight: 'bold' 
+  },
+  roleMember: { 
+    backgroundColor: '#f5f5f5', color: '#666', padding: '4px 10px', 
+    borderRadius: '12px', fontSize: '0.8rem' 
+  },
+
+  // ... (기존 모달 스타일들)
   addRecordBtn: {
     padding: '10px 20px', backgroundColor: '#333', color: '#fff', 
     border: 'none', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold',
